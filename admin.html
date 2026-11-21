@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin: auto enhance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/dist/face-api.js"></script>
+<style>
+:root{--bg:#0c1f1b;--panel:#143730;--line:rgba(217,180,106,.22);--ink:#f3efe6;--muted:#a9bdb5;--gold:#d9b46a;--gold-d:#b8924a;--on-gold:#2a1e05;
+  --serif:'Cormorant Garamond',Georgia,serif;--sans:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;font-family:var(--sans);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(900px 480px at 50% -120px,#1b4a3f 0%,transparent 70%),var(--bg)}
+.wrap{max-width:680px;margin:0 auto;padding:40px 18px 64px}
+header{margin-bottom:24px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.1rem,6vw,3rem);line-height:1.08;margin:0 0 10px}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+header p b{color:var(--ink);font-weight:600}header p i{color:var(--gold);font-style:normal;font-weight:600}
+.panel{background:linear-gradient(160deg,var(--panel),#0e2924);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 30px 60px -30px rgba(0,0,0,.7)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+input{flex:1 1 220px;min-height:48px;font:500 1rem var(--sans);color:var(--ink);background:rgba(5,14,12,.55);border:1px solid var(--line);border-radius:12px;padding:0 16px}
+select{flex:1 1 100%;min-height:48px;font:500 1rem var(--sans);color:var(--ink);background:rgba(5,14,12,.55);border:1px solid var(--line);border-radius:12px;padding:0 16px}
+select:focus{outline:2px solid var(--gold);outline-offset:2px;border-color:transparent}
+.lab{flex:1 1 100%;margin:6px 0 -2px;font-size:.85rem;color:var(--muted)}
+input::placeholder{color:#7f968d}
+input:focus{outline:2px solid var(--gold);outline-offset:2px;border-color:transparent}
+button{min-height:48px;padding:0 28px;font:600 1rem var(--sans);color:var(--on-gold);background:linear-gradient(180deg,#e6c27c,var(--gold-d));border:0;border-radius:12px;cursor:pointer;box-shadow:0 10px 24px -12px rgba(217,180,106,.7);transition:transform .15s,opacity .15s}
+button:hover:not(:disabled){transform:translateY(-1px)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.bar{display:flex;align-items:center;justify-content:space-between;margin:22px 0 10px;gap:10px}
+.bar h2{margin:0;font-family:var(--serif);font-size:1.5rem;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;font-size:.82rem;color:var(--muted)}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:#6b7f78}
+.pill.on{color:var(--gold)}
+.pill.on::before{background:#5fd39a;box-shadow:0 0 0 0 rgba(95,211,154,.6);animation:pulse 1.6s infinite}
+.pill.err{color:#f0a3a3}.pill.err::before{background:#e86a6a}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(95,211,154,0)}100%{box-shadow:0 0 0 0 rgba(95,211,154,0)}}
+pre#log{margin:0;padding:16px;min-height:220px;max-height:50vh;overflow:auto;white-space:pre-wrap;word-break:break-word;
+  font:500 .85rem/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#cfe0d8;background:rgba(5,14,12,.6);border:1px solid var(--line);border-radius:14px}
+@media (max-width:480px){button{width:100%}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head><body>
+<div class="wrap">
+<header>
+  <h1>Admin: auto enhance</h1>
+  <p>Ye tab event ke dauran <b>khula rakho</b> (Chrome, laptop par). Ye <i>Engagement Photos</i> se photo leke enhance karta hai aur <i>Engagement Photos 1</i> me save karta hai.</p>
+</header>
+<section class="panel">
+  <div class="row">
+    <input id="key" type="password" placeholder="Admin key" autocomplete="current-password" onkeydown="if(event.key==='Enter')start()">
+    <button id="go" onclick="start()">Start</button>
+    <span class="lab">Speed</span>
+    <select id="spd"><option value="fast" selected>Fast: 2048px, ~2 sec me save</option><option value="hd">HD: 4096px, thoda slow</option></select>
+    <span class="lab">Enhance level</span>
+    <select id="lvl"><option value="1" selected>Ultra: sabse zyada enhance</option><option value="0.75">Balanced: natural look</option><option value="0.5">Soft: halka sa</option></select>
+  </div>
+</section>
+<div class="bar"><h2>Activity</h2><span class="pill" id="st">Ruka hua</span></div>
+<pre id="log">Key daalkar Start dabao.</pre>
+</div>
+<script>
+const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model/';
+let key = '', faces = {}, busy = false;
+const logEl = document.getElementById('log');
+const log = t => { logEl.textContent = t + '\n' + logEl.textContent.slice(0, 3000); };
+const setSt = (t, c) => { const s = document.getElementById('st'); s.textContent = t; s.className = 'pill ' + (c || ''); };
+const run = (fn, ...a) => new Promise((ok, no) =>
+  google.script.run.withSuccessHandler(ok).withFailureHandler(e => no(new Error(e.message || e)))[fn](...a));
+const loadImg = b64 => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('Image khuli nahi')); i.src = 'data:image/jpeg;base64,' + b64; });
+const toB64 = blob => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result.split(',')[1]); fr.readAsDataURL(blob); });
+
+async function start() {
+  key = document.getElementById('key').value;
+  document.getElementById('go').disabled = true; setSt('Tayyari...', 'on');
+  try {
+    log('Models load ho rahe hain...');
+    await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL);
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL);
+    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL);
+    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL);
+    faces = JSON.parse(await run('getFacesAdmin', key));
+    log('Models garam ho rahe hain...'); await warmUp(); getWorker();
+    try { const wc = document.createElement('canvas'); wc.width = wc.height = 128; await enhanceInWorker(await createImageBitmap(wc), 1, null, 2048); } catch (_) {}  // worker bhi garam
+    catchUp();
+    log('Ready. Nayi photos dhoondh raha hoon...');
+    setSt('Chal raha hai', 'on');
+    loop();
+  } catch (e) { log('Error: ' + e.message); setSt('Error', 'err'); document.getElementById('go').disabled = false; }
+}
+async function loop() {
+  let n = 0;
+  if (!busy) { busy = true; try { n = await tick(); } catch (e) { log('Error: ' + e.message); } busy = false; }
+  setTimeout(loop, n ? 0 : 1000); // photos bachi hon to turant agla round, warna 1 sec baad check
+}
+const FACE_PX = 800;      // face detection ki size: chhota = tez, bada = chhote chehre bhi mile
+const MAX_PX = 4096;      // enhanced photo ki max size
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+// ---- Enhance engine: alag worker thread me chalta hai, page hang nahi hota ----
+function workerBody() {
+  const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+  function boxBlur(a, t, w, h, r) {
+    const win = 2 * r + 1;
+    for (let y = 0; y < h; y++) {
+      const o = y * w; let acc = 0;
+      for (let i = -r; i <= r; i++) acc += a[o + clamp(i, 0, w - 1)];
+      for (let x = 0; x < w; x++) { t[o + x] = acc / win; acc += a[o + Math.min(x + r + 1, w - 1)] - a[o + Math.max(x - r, 0)]; }
+    }
+    for (let x = 0; x < w; x++) {
+      let acc = 0;
+      for (let i = -r; i <= r; i++) acc += t[clamp(i, 0, h - 1) * w + x];
+      for (let y = 0; y < h; y++) { a[y * w + x] = acc / win; acc += t[Math.min(y + r + 1, h - 1) * w + x] - t[Math.max(y - r, 0) * w + x]; }
+    }
+  }
+  function enhance(d, w, h, S, faceY) {
+    const n = w * h, hist = new Uint32Array(256), stride = Math.max(1, (n / 300000) | 0);
+    let cnt = 0, sumY = 0, sR = 0, sG = 0, sB = 0, cm = 0;
+    for (let p = 0; p < n; p += stride) {
+      const i = p * 4, r = d[i], g = d[i + 1], b = d[i + 2], y = (0.2126 * r + 0.7152 * g + 0.0722 * b) | 0;
+      hist[y]++; cnt++; sumY += y;
+      if (y > 40 && y < 215 && Math.max(r, g, b) - Math.min(r, g, b) < 70) { sR += r; sG += g; sB += b; cm++; }
+    }
+    let lo = 0, hi = 255, acc = 0;
+    for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= cnt * 0.004) { lo = i; break; } }
+    acc = 0; for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= cnt * 0.996) { hi = i; break; } }
+    lo = Math.min(lo, 50) * S; hi = 255 - (255 - Math.max(hi, 190)) * S;
+    const span = Math.max(hi - lo, 60), lv = v => clamp((v - lo) / span, 0, 1);
+    let gR = 1, gG = 1, gB = 1;
+    if (cm > 1000) {
+      const mR = sR / cm, mG = sG / cm, mB = sB / cm, av = (mR + mG + mB) / 3, k = 0.8 * S;
+      gR = 1 + clamp(av / mR - 1, -.06, .06) * k; gG = 1 + clamp(av / mG - 1, -.06, .06) * k; gB = 1 + clamp(av / mB - 1, -.06, .06) * k;
+    }
+    let gamma;
+    if (faceY != null) gamma = clamp(Math.log(0.56) / Math.log(clamp(lv(faceY), .05, .95)), .7, 1.35);
+    else gamma = clamp(Math.log(0.46) / Math.log(clamp(lv(sumY / cnt), .05, .95)), .8, 1.25);
+    gamma = 1 + (gamma - 1) * S;
+    const tone = x => {
+      x = Math.pow(lv(x * 255), gamma);
+      x += 1.2 * 0.18 * S * x * (1 - x) * (1 - x);
+      x -= 0.5 * S * x * x * (1 - x);
+      return clamp(x + 0.35 * S * (x * x * (3 - 2 * x) - x), 0, 1);
+    };
+    const LR = new Uint8ClampedArray(256), LG = new Uint8ClampedArray(256), LB = new Uint8ClampedArray(256);
+    for (let i = 0; i < 256; i++) {
+      LR[i] = Math.round(tone(Math.min(1, i * gR / 255)) * 255);
+      LG[i] = Math.round(tone(Math.min(1, i * gG / 255)) * 255);
+      LB[i] = Math.round(tone(Math.min(1, i * gB / 255)) * 255);
+    }
+    // pass 1: tone + vibrance (ek hi loop me)
+    const vib = 0.38 * S;
+    for (let i = 0, e = n * 4; i < e; i += 4) {
+      let r = LR[d[i]], g = LG[d[i + 1]], b = LB[d[i + 2]];
+      const mx = r > g ? (r > b ? r : b) : (g > b ? g : b), mn = r < g ? (r < b ? r : b) : (g < b ? g : b);
+      const y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      const f = 1 + vib * (1 - (mx - mn) / (mx || 1)) * (r > g && g > b && (mx - mn) < 0.6 * mx ? 0.45 : 1);
+      d[i] = y + (r - y) * f; d[i + 1] = y + (g - y) * f; d[i + 2] = y + (b - y) * f;
+    }
+    // pass 2: blur sirf aadhi size par (4x tez), full-size luma array ki zarurat nahi
+    const lw = (w + 1) >> 1, lh = (h + 1) >> 1, half = new Float32Array(lw * lh), tmp = new Float32Array(lw * lh);
+    for (let y = 0; y < lh; y++) {
+      const y0 = y * 2, y1 = Math.min(y0 + 1, h - 1);
+      for (let x = 0; x < lw; x++) {
+        const x0 = x * 2, x1 = Math.min(x0 + 1, w - 1);
+        const a = (y0 * w + x0) * 4, b = (y0 * w + x1) * 4, c = (y1 * w + x0) * 4, q = (y1 * w + x1) * 4;
+        half[y * lw + x] = 0.25 * (0.2126 * (d[a] + d[b] + d[c] + d[q]) + 0.7152 * (d[a + 1] + d[b + 1] + d[c + 1] + d[q + 1]) + 0.0722 * (d[a + 2] + d[b + 2] + d[c + 2] + d[q + 2]));
+      }
+    }
+    const rr = Math.max(1, Math.round(Math.max(w, h) / 3200));
+    boxBlur(half, tmp, lw, lh, rr); boxBlur(half, tmp, lw, lh, rr);
+    // pass 3: luma sharpening (noise guard ke saath)
+    const amt = 0.95 * S, th = 4;
+    for (let y = 0; y < h; y++) {
+      const v = (y + 0.5) * 0.5 - 0.5, ya = clamp(Math.floor(v), 0, lh - 1), yb = Math.min(ya + 1, lh - 1), ty = clamp(v - Math.floor(v), 0, 1);
+      const ra = ya * lw, rb = yb * lw;
+      for (let x = 0; x < w; x++) {
+        const u = (x + 0.5) * 0.5 - 0.5, xa = clamp(Math.floor(u), 0, lw - 1), xb = Math.min(xa + 1, lw - 1), tx = clamp(u - Math.floor(u), 0, 1);
+        const bl = (half[ra + xa] * (1 - tx) + half[ra + xb] * tx) * (1 - ty) + (half[rb + xa] * (1 - tx) + half[rb + xb] * tx) * ty;
+        const i = (y * w + x) * 4, dt = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2] - bl, a = dt < 0 ? -dt : dt;
+        let dl = amt * dt * (a < th ? a / th : 1); dl = dl > 36 ? 36 : dl < -36 ? -36 : dl;
+        d[i] += dl; d[i + 1] += dl; d[i + 2] += dl;
+      }
+    }
+    return 'exposure ' + gamma.toFixed(2) + (faceY != null ? ' (chehre ke hisaab se)' : '');
+  }
+  self.onmessage = async e => {
+    const { id, bitmap, S, faceY, maxPx, q } = e.data;
+    try {
+      const sc = Math.min(1, maxPx / Math.max(bitmap.width, bitmap.height));
+      const w = Math.round(bitmap.width * sc), h = Math.round(bitmap.height * sc);
+      const oc = new OffscreenCanvas(w, h), ctx = oc.getContext('2d', { willReadFrequently: true });
+      ctx.imageSmoothingQuality = 'high'; ctx.drawImage(bitmap, 0, 0, w, h); bitmap.close();
+      const im = ctx.getImageData(0, 0, w, h), info = enhance(im.data, w, h, S, faceY);
+      ctx.putImageData(im, 0, 0);
+      self.postMessage({ id, blob: await oc.convertToBlob({ type: 'image/jpeg', quality: q }), info });
+    } catch (err) { self.postMessage({ id, error: String(err && err.message || err) }); }
+  };
+}
+let worker = null, jobId = 0; const jobs = {};
+function getWorker() {
+  if (worker) return worker;
+  worker = new Worker(URL.createObjectURL(new Blob(['(' + workerBody.toString() + ')()'], { type: 'text/javascript' })));
+  worker.onmessage = e => { const j = jobs[e.data.id]; delete jobs[e.data.id]; e.data.error ? j.no(new Error(e.data.error)) : j.ok(e.data); };
+  return worker;
+}
+const enhanceInWorker = (bitmap, S, faceY, maxPx) => new Promise((ok, no) => {
+  const id = ++jobId; jobs[id] = { ok, no };
+  getWorker().postMessage({ id, bitmap, S, faceY, maxPx, q: 0.88 }, [bitmap]);
+});
+
+// ---- Chehre: original photo par, ek chhoti copy me ----
+function faceLuma(sm, dets) {
+  const ctx = sm.getContext('2d'); let sum = 0, cnt = 0;
+  for (const d of dets) {
+    const b = (d.detection || d).box;
+    const x = Math.max(0, Math.round(b.x + b.width * .2)), y = Math.max(0, Math.round(b.y + b.height * .2));
+    const w = Math.min(Math.round(b.width * .6), sm.width - x), h = Math.min(Math.round(b.height * .6), sm.height - y);
+    if (w < 4 || h < 4) continue;
+    const px = ctx.getImageData(x, y, w, h).data;
+    for (let i = 0; i < px.length; i += 4) { sum += 0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]; cnt++; }
+  }
+  return cnt ? sum / cnt : null;
+}
+const b64ToBlob = b64 => { const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: 'image/jpeg' }); };
+async function warmUp() {
+  try {
+    const a = document.createElement('canvas'); a.width = a.height = 160;
+    await faceapi.detectAllFaces(a, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }));
+    await faceapi.detectAllFaces(a, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }));
+    const b = document.createElement('canvas'); b.width = b.height = 150;
+    await faceapi.nets.faceRecognitionNet.computeFaceDescriptor(b);
+    await faceapi.nets.faceLandmark68Net.detectLandmarks(b);
+  } catch (_) {}
+}
+
+// ---- Pipeline ----
+// Photo ka rasta: chhota download -> tez chehra (exposure ke liye) -> enhance -> SAVE.
+// Chehre ki pehchan (selfie match ke liye) uske baad background me hoti hai, save ko rokti nahi.
+let okCount = 0, saving = false, dirty = false; const faceBusy = new Set();
+const nameOf = f => f.name.replace(/\.[^.]+$/, '') + '.jpg';
+async function flushFaces() {           // faces.json ek hi baar me, order bigadne se bachne ke liye
+  if (saving) { dirty = true; return; }
+  saving = true;
+  try { do { dirty = false; const sv = () => run('saveFaces', key, JSON.stringify(faces)); await sv().catch(sv); } while (dirty); }
+  finally { saving = false; }
+}
+async function prep(f, hd) {
+  try {
+    const name = nameOf(f), t0 = performance.now();
+    const b64 = hd ? await run('getInputBase64', key, f.id)
+      : await run('getInputFastBase64', key, f.id, 2048, f.link).catch(() => run('getInputBase64', key, f.id)); // fast na mile to purana tarika
+    const bmp = await createImageBitmap(b64ToBlob(b64));
+    const k = Math.min(1, FACE_PX / Math.max(bmp.width, bmp.height)), sm = document.createElement('canvas');
+    sm.width = Math.round(bmp.width * k); sm.height = Math.round(bmp.height * k);
+    sm.getContext('2d', { willReadFrequently: true }).drawImage(bmp, 0, 0, sm.width, sm.height);
+    let faceY = null;                   // bahut tez detector, 320px copy par, sirf exposure ke liye
+    try {
+      const tc = document.createElement('canvas'), tk = Math.min(1, 320 / Math.max(bmp.width, bmp.height));
+      tc.width = Math.round(bmp.width * tk); tc.height = Math.round(bmp.height * tk);
+      tc.getContext('2d', { willReadFrequently: true }).drawImage(bmp, 0, 0, tc.width, tc.height);
+      faceY = faceLuma(tc, await faceapi.detectAllFaces(tc, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })));
+    } catch (_) {}
+    return { f, name, bmp, sm, faceY, t0 };
+  } catch (err) { return { f, err }; }
+}
+async function facePass(c) {            // asli chehra pehchan (SSD + descriptor), background me
+  faceBusy.add(c.name);
+  try {
+    const det = await faceapi.detectAllFaces(c.sm, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 })).withFaceLandmarks().withFaceDescriptors();
+    faces[c.name] = det.map(d => Array.from(d.descriptor).map(x => +x.toFixed(3)));
+    await flushFaces();
+    log('Chehre: ' + c.name + ' (' + det.length + ' mile)');
+  } catch (err) { log('Chehre error (' + c.name + '): ' + err.message); }
+  faceBusy.delete(c.name);
+}
+async function upload(c, out) {
+  try {
+    const b64 = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result.split(',')[1]); fr.readAsDataURL(out.blob); });
+    await run('saveEnhanced', key, c.name, b64);
+    okCount++;
+    log('SAVED: ' + c.name + ' in ' + ((performance.now() - c.t0) / 1000).toFixed(1) + ' sec (' + out.info + ')');
+  } catch (err) { log('Error (' + c.name + '): ' + err.message); }
+}
+async function getTodo() {              // ek hi call me nayi photos (server cache ke saath)
+  try { return await run('pending', key); }
+  catch (e) {
+    const [inp, out] = await Promise.all([run('listInput', key), run('listOutput')]);
+    const done = new Set(out.map(f => f.name));
+    return inp.filter(f => !done.has(nameOf(f)));
+  }
+}
+// Start par ek baar: pichhli session me save hui par chehra-data bacha ho to wo background me pura karo
+async function catchUp() {
+  try {
+    const [inp, out] = await Promise.all([run('listInput', key), run('listOutput')]);
+    const done = new Set(out.map(f => f.name));
+    for (const f of inp) {
+      const n = nameOf(f);
+      if (done.has(n) && faces[n] === undefined && !faceBusy.has(n)) { const c = await prep(f, false); if (!c.err) { c.bmp.close(); await facePass(c); } }
+    }
+  } catch (_) {}
+}
+async function tick() {
+  const todo = await getTodo();
+  const sel = document.getElementById('lvl'), S = +sel.value, hd = document.getElementById('spd').value === 'hd', maxPx = hd ? 4096 : 2048;
+  const before = okCount; let up = Promise.resolve();
+  if (todo.length) {
+    let next = prep(todo[0], hd);
+    for (let k = 0; k < todo.length; k++) {
+      const cur = await next;
+      if (k + 1 < todo.length) next = prep(todo[k + 1], hd);   // agli photo ka download abhi se
+      if (cur.err) { log('Error (' + cur.f.name + '): ' + cur.err.message); continue; }
+      try {
+        const o = await enhanceInWorker(cur.bmp, S, cur.faceY, maxPx);
+        await up; up = upload(cur, o);                          // save turant
+        facePass(cur);                                          // chehra pehchan peeche chalti rahegi
+      } catch (err) { log('Error (' + cur.name + '): ' + err.message); }
+    }
+    await up;
+  }
+  return okCount - before;
+}
+</script></body></html>
